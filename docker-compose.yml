@@ -1,0 +1,22 @@
+name: barcode-assembly
+
+services:
+  api:
+    build: .
+    image: barcode-assembly-api
+    environment:
+      API_PORT: ${API_PORT:-8000}
+    ports:
+      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    # 健康检查由镜像 Dockerfile 中的 HEALTHCHECK 提供（跟随 API_PORT）
+
+  verify:
+    image: barcode-assembly-api
+    build: .
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://api:${API_PORT:-8000}
+    command: ["python", "verify.py"]
+    restart: "no"
